@@ -1,0 +1,9 @@
+datasets==2.18.0
+huspacy==0.11.0
+spacy==3.7.5
+pandas==2.1.1
+numpy==1.24.4
+tqdm==4.66.1
+quntoken==3.1.8
+transformers==4.41.2
+scipy==1.11.3
