@@ -22,7 +22,7 @@ A fő script futtatásához:
 ##Fő Script
 
 A fő script az alábbi lépéseket hajtja végre:
-
+    Bekéri a felhasználótól a használni kívánt GPU ID-át.
     Bekéri a felhasználótól a bemeneti mappa elérési útját és a kimeneti mappa elérési útját.
     Ellenőrzi a bemeneti mappa létezését.
     Létrehozza a kimeneti mappát, ha nem létezik.
