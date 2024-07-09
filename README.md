@@ -5,7 +5,8 @@ Ez a projekt egy szövegfeldolgozó pipeline-t biztosít, amely magában foglalj
 ##Telepítés
 
     Klónozd a repozitóriumot:
-
+        git clone https://git.nlp.nytud.hu/madaraszg/BERTextFilter.git
+        
     Telepítsd a szükséges csomagokat:
     ```bash
     pip install -r requirements.txt
