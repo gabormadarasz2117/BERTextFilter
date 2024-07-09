@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# coding: utf-8
+
 import os
 from src.text_cleaner import process_all_files
 from src.deduplicate import main as find_duplicates_main
