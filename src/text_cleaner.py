@@ -5,6 +5,7 @@ import spacy
 import huspacy
 import pandas as pd
 import numpy as np
+import torch
 
 from tqdm import tqdm
 from quntoken import tokenize
@@ -12,6 +13,13 @@ from transformers import pipeline
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 from scipy.signal import argrelextrema
+
+#models
+gpus = [i for i in range(torch.cuda.device_count())]
+print("Available GPUIDs:", gpus)
+device = int(input("Please enter the GPUID to use! (-1 to CPU): ").strip())
+pipe = pipeline("text-classification", model="NYTK/hucola-puli-bert-large-hungarian", max_length=512, truncation=True, device=device)
+model = SentenceTransformer('NYTK/sentence-transformers-experimental-hubert-hungarian').to(f"cuda:{device}")
 
 # Function to clean text
 def clean_text(text_list):
@@ -46,6 +54,9 @@ def clean_text(text_list):
         # Add the cleaned text to the list
         cleaned_text_list.append(cleaned_text.strip())
     
+        #Remove only UPPERCASE rows
+        cleaned_text_list = [s for s in cleaned_text_list if not s.isupper()]
+
     return cleaned_text_list
     
 def character_ratios(text):
@@ -66,6 +77,34 @@ def convert_to_standard_hungarian(text):
                 'Ó': 'Ó', 'Ö': 'Ö', 'Ő': 'Ő', 'Ú': 'Ú', 'Ü': 'Ü', 'Ű': 'Ű',
                 'û': 'ű', 'Û': 'Ű'}
     return ''.join(char_map.get(char, char) for char in text)
+
+def remove_space_before_punctuation(text):
+    punctuation_marks = [".", ",", ";", ":", "!", "?"]
+    for mark in punctuation_marks:
+        text = text.replace(f" {mark}", mark)
+    return text
+
+def remove_hyphenation(lines):
+    """
+    Eltávolítja a sorvégi elválasztójeleket, és összevonja az elválasztott szavakat egy szöveges fájlban.
+    """
+    cleaned_lines = []
+    buffer = ""
+
+    for line in lines:
+        stripped_line = line.rstrip()  # Sorvégi whitespace eltávolítása
+        if stripped_line.endswith('-'):
+            buffer += stripped_line[:-1]  # Elválasztójel eltávolítása és sor vége bufferbe
+        else:
+            buffer += stripped_line  # Hozzáadjuk a sor végét a bufferhez
+            cleaned_lines.append(buffer)
+            buffer = ""  # Buffer ürítése a következő sorhoz
+
+    # Maradék buffer hozzáadása, ha van
+    if buffer:
+        cleaned_lines.append(buffer)
+
+    return "\n".join(cleaned_lines)
 
 def rev_sigmoid(x: float) -> float:
     return 1 / (1 + math.exp(0.5 * x))
@@ -110,17 +149,19 @@ def activate_similarities(similarities: np.array, p_size=10) -> np.array:
 
 def process_file(input_file_path, output_file_path):
     with open(input_file_path, 'r', encoding='utf-8') as file:
-        text = file.read()
+        lines = file.readlines()
 
-    if not text.strip():
+    if not lines:
         print(f"The file {input_file_path} is empty.")
         return
 
+    text = remove_hyphenation(lines)
+    
     tokenized_list = list(tokenize(text, mode='sentence', word_break=True, form='spl'))
     
     text = clean_text(tokenized_list)
     
-    pipe = pipeline("text-classification", model="NYTK/hucola-puli-bert-large-hungarian", max_length=512, truncation=True)
+    
 
     checked = []
     for sentence in tqdm(text, desc="Processing sentences"):
@@ -135,13 +176,16 @@ def process_file(input_file_path, output_file_path):
     char_filtered_list = [item for item in email_filtered_list if character_ratios(item) < 0.2]
     accent_fixed = [convert_to_standard_hungarian(item).replace("\n", "") for item in char_filtered_list]
     hun_char_filtered = [item for item in accent_fixed if check_hungarian_chars(item)]
-    final_text = " ".join(hun_char_filtered)
+    punc_fixed = [remove_space_before_punctuation(item) for item in hun_char_filtered]
+    whitespace_fixed = [s.lstrip() for s in punc_fixed]
+    final_text = " ".join(whitespace_fixed)
 
     if not final_text.strip():
         print("The final text is empty. No sentences were generated.")
         return
 
     nlp = spacy.load("hu_core_news_md")
+    nlp.max_length = 3000000
     doc = nlp(final_text, disable=['ner', 'parser', 'morphologizer', 'lookup_lemmatizer', 'trainable_lemmatizer'])
     sentences = list(sent.text for sent in doc.sents)
 
@@ -150,7 +194,7 @@ def process_file(input_file_path, output_file_path):
         return
 
     try:
-        model = SentenceTransformer('NYTK/sentence-transformers-experimental-hubert-hungarian')
+        
         embeddings = model.encode(sentences)
     except Exception as e:
         print(f"Error encoding sentences: {e}")
@@ -164,7 +208,7 @@ def process_file(input_file_path, output_file_path):
     text = ''
     for num, each in enumerate(sentences):
         if num in split_points:
-            text += f'\n {each} '
+            text += f'\n{each} '
         else:
             text += f'{each} '
 

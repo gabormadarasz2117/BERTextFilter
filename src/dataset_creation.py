@@ -67,7 +67,8 @@ def main(folder_path, dataset_name):
 # This block allows the script to be executed standalone
 if __name__ == "__main__":
     folder_path = input("Please enter the input folder path: ")
-    dataset = main(folder_path)
+    dataset_name = input("Please enter the dataset's name: ")
+    dataset = main(folder_path, dataset_name)
     
     # Example to print the dataset
     print(dataset)

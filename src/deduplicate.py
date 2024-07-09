@@ -49,11 +49,11 @@ def delete_duplicates(folder_path, duplicate_sentences):
                         file.write(l)
     print("Duplicate sentences have been deleted.")
 
-def main(folder_path):
+def main(folder_path, user_input):
     duplicate_sentences = find_duplicate_sentences(folder_path)
     if duplicate_sentences:
         print_duplicates(duplicate_sentences)
-        user_input = input("Do you want to delete the duplicate sentences from the files? (yes/no): ").strip().lower()
+        #user_input = input("Do you want to delete the duplicate sentences from the files? (yes/no): ").strip().lower()
         if user_input in ["yes", "y"]:
             delete_duplicates(folder_path, duplicate_sentences)
         else:
