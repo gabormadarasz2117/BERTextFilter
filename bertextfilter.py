@@ -7,6 +7,15 @@ def main():
     input_folder = input("Please enter the input folder path: ").strip()
     output_folder = input("Please enter the output folder path: ").strip()
     
+    # Ask the user if they want to create a Hugging Face dataset
+    create_dataset = input("Do you want to create a HuggingFace dataset? (yes/no): ").strip().lower()
+    
+    if create_dataset in ["yes", "y"]:
+        dataset_name = input("Please enter the dataset's name: ").strip().lower()
+
+    # Ask the user if they want to deduplacate
+    deduplicate = input("Do you want to delete duplacated sentences? (yes/no): ").strip().lower()
+    
     if not os.path.exists(input_folder):
         print(f"Input folder '{input_folder}' does not exist.")
         return
@@ -21,19 +30,16 @@ def main():
     print("Files processed.")
 
     # Call the duplicate sentence handling
-    print("Finding and handling duplicate sentences...")
-    find_duplicates_main(output_folder)
-    print("Duplicate sentence handling complete.")
+    if deduplicate in ["yes", "y"]:
+        print("Finding and handling duplicate sentences...")
+        find_duplicates_main(output_folder, deduplicate)
+        print("Duplicate sentence handling complete.")
 
-    # Ask the user if they want to create a Hugging Face dataset
-    create_dataset = input("Do you want to create a HuggingFace dataset? (yes/no): ").strip().lower()
+    # Create HF dataset
     if create_dataset in ["yes", "y"]:
-        dataset_name = input("Please enter the dataset's name: ").strip().lower()
         print("Creating Hugging Face dataset...")
         create_huggingface_dataset(output_folder, dataset_name)
         print("Hugging Face dataset creation complete.")
-    else:
-        print("No Hugging Face dataset was created.")
 
 if __name__ == "__main__":
     main()
