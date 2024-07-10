@@ -35,7 +35,26 @@ def create_huggingface_dataset(data):
     dataset = Dataset.from_list(data)
     return dataset
 
-def main(folder_path, dataset_name):
+def delete_small_txt_files(folder_path, size_threshold=10*1024):
+    """
+    Törli az összes 10KB-nál kisebb .txt fájlt a megadott mappából.
+
+    :param folder_path: A mappa elérési útja, ahol a fájlokat ellenőrizni kell.
+    :param size_threshold: A méretküszöb, amely alatt a fájlokat törölni kell (alapértelmezett 10KB).
+    """
+    # Bejárjuk a mappát
+    for filename in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, filename)
+        
+        # Ellenőrizzük, hogy a fájl egy .txt fájl-e és hogy kisebb-e a küszöbnél
+        if filename.endswith(".txt") and os.path.isfile(file_path) and os.path.getsize(file_path) < size_threshold:
+            try:
+                os.remove(file_path)
+                print(f"Törölt fájl: {file_path}")
+            except Exception as e:
+                print(f"Hiba történt a törlés során: {file_path}. Hiba: {e}")
+
+def main(folder_path, dataset_name, remove_small_files):
     """
     Main function to read .txt files from a folder, create a Hugging Face Dataset,
     split it into train, validation, and test sets, and save them to disk.
@@ -46,8 +65,11 @@ def main(folder_path, dataset_name):
     Returns:
     - dataset_dict (DatasetDict): Dictionary containing 'train', 'validation', and 'test' datasets.
     """
-    data = read_txt_files_from_folder(folder_path)
-    dataset = create_huggingface_dataset(data)
+    if remove_small_files in ["yes", "y"]:
+        delete_small_txt_files(folder_path)
+    else:
+        data = read_txt_files_from_folder(folder_path)
+        dataset = create_huggingface_dataset(data)
     
     # Split the dataset into train, validation, and test sets
     train_testvalid = dataset.train_test_split(test_size=0.1)
@@ -68,7 +90,8 @@ def main(folder_path, dataset_name):
 if __name__ == "__main__":
     folder_path = input("Please enter the input folder path: ")
     dataset_name = input("Please enter the dataset's name: ")
-    dataset = main(folder_path, dataset_name)
+    remove_small_files = input("Delete small txt files? < 10KB (yes / no)")
+    dataset = main(folder_path, dataset_name, remove_small_files)
     
     # Example to print the dataset
     print(dataset)

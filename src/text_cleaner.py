@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
 import os
 import re
 import math
@@ -188,7 +185,7 @@ def process_file(input_file_path, output_file_path):
         return
 
     nlp = spacy.load("hu_core_news_md")
-    nlp.max_length = 3000000
+    nlp.max_length = 9000000
     doc = nlp(final_text, disable=['ner', 'parser', 'morphologizer', 'lookup_lemmatizer', 'trainable_lemmatizer'])
     sentences = list(sent.text for sent in doc.sents)
 
