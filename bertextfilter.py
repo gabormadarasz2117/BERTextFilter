@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
 import os
 from src.text_cleaner import process_all_files
 from src.deduplicate import main as find_duplicates_main
@@ -15,7 +12,8 @@ def main():
     
     if create_dataset in ["yes", "y"]:
         dataset_name = input("Please enter the dataset's name: ").strip().lower()
-
+        remove_small_files = input("Delete small txt files from dataset? < 10KB (yes / no)").strip().lower()
+    
     # Ask the user if they want to deduplacate
     deduplicate = input("Do you want to delete duplacated sentences? (yes/no): ").strip().lower()
     
@@ -41,7 +39,7 @@ def main():
     # Create HF dataset
     if create_dataset in ["yes", "y"]:
         print("Creating Hugging Face dataset...")
-        create_huggingface_dataset(output_folder, dataset_name)
+        create_huggingface_dataset(output_folder, dataset_name, remove_small_files)
         print("Hugging Face dataset creation complete.")
 
 if __name__ == "__main__":
