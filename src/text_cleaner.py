@@ -7,9 +7,11 @@ import pandas as pd
 import numpy as np
 import torch
 
+from datasets import Dataset
 from tqdm import tqdm
 from quntoken import tokenize
 from transformers import pipeline
+from transformers.pipelines.pt_utils import KeyDataset
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 from scipy.signal import argrelextrema
@@ -18,7 +20,7 @@ from scipy.signal import argrelextrema
 gpus = [i for i in range(torch.cuda.device_count())]
 print("Available GPUIDs:", gpus)
 device = int(input("Please enter the GPUID to use! (-1 to CPU): ").strip())
-pipe = pipeline("text-classification", model="NYTK/hucola-puli-bert-large-hungarian", max_length=512, truncation=True, device=device)
+pipe = pipeline("text-classification", model="NYTK/hucola-puli-bert-large-hungarian", max_length=512, truncation=True, device=device, batch_size=32)
 model = SentenceTransformer('NYTK/sentence-transformers-experimental-hubert-hungarian').to(f"cuda:{device}")
 
 # Function to clean text
@@ -147,6 +149,7 @@ def activate_similarities(similarities: np.array, p_size=10) -> np.array:
     
     return activated_similarities
 
+
 def process_file(input_file_path, output_file_path):
     with open(input_file_path, 'r', encoding='utf-8') as file:
         lines = file.readlines()
@@ -162,12 +165,23 @@ def process_file(input_file_path, output_file_path):
     text = clean_text(tokenized_list)
     
     
+    # Szövegek dictionary-k listájának létrehozása
+    szoveg_dict_lista = [{"text": szoveg} for szoveg in text]
 
+    # Dataset létrehozása
+    dataset = Dataset.from_list(szoveg_dict_lista)
+
+
+    # pipe használata
     checked = []
-    for sentence in tqdm(text, desc="Processing sentences"):
-        entry = {"text": sentence}
-        entry["label"] = pipe(sentence)[0]["label"]
+    for original_text, result in tqdm(zip(dataset["text"], pipe(KeyDataset(dataset, "text"))), total=len(dataset), desc="Processing sentences"):
+        entry = {"text": original_text}
+        entry["label"] = result["label"]
         checked.append(entry)
+
+# Az eredmény lista létrehozása
+    #checked = processed_dataset.to_list()
+
 
     filtered_list = [item["text"] for item in checked if item["label"] == "LABEL_1"]
     email_filtered_list = [item for item in filtered_list if not re.search(
