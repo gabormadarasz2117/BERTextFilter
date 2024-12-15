@@ -1,44 +1,47 @@
-BERTextFilter
+# BERTextFilter
 
-Ez a projekt egy szövegfeldolgozó pipeline-t biztosít, amely magában foglalja a szövegfájlok nyelvhelyességi vizsgálata alápján a szűrést, a duplikált mondatok kezelését és opcionálisan egy Hugging Face adatcsomag létrehozását.
+This project provides a Hungarian text processing pipeline that includes filtering based on the grammatical correctness of text files, handling duplicate sentences, and optionally creating a Hugging Face dataset.
+It uses two language models to accompish the task: 
+-NYTK/hucola-puli-bert-large-hungarian 
+-NYTK/sentence-transformers-experimental-hubert-hungarian
 
-Telepítés
 
-    Klónozd a repozitóriumot:
+
+# Install
+
+    Clone:
         git clone https://git.nlp.nytud.hu/madaraszg/BERTextFilter.git
         
-    Telepítsd a szükséges csomagokat:
+    Install the required packages:
     ```bash
     pip install -r requirements.txt
     ```
     
-Használat
+# Usage
 
-A fő script futtatásához:
+Main script:
 
     ```bash
     python3 bertextfilter.py
     ```
 
-Fő Script
 
-A fő script az alábbi lépéseket hajtja végre:
-    
-    Bekéri a felhasználótól a használni kívánt GPU ID-át.
-    
-    Bekéri a felhasználótól a bemeneti mappa elérési útját és a kimeneti mappa elérési útját.
-    
-    Ellenőrzi a bemeneti mappa létezését.
-    
-    Létrehozza a kimeneti mappát, ha nem létezik.
-    
-    Feldolgozza a bemeneti mappában lévő szövegfájlokat a text_cleaner.py-ban található process_all_files függvény segítségével.
-    
-    Megkeresi és kilistázza a duplikált mondatokat a feldolgozott fájlokban a deduplicate.py-ban található main függvény segítségével.
-    
-    Megkérdezi a felhasználót, hogy szeretné-e törölni a duplikált mondatokat.
-    
-    Megkérdezi a felhasználót, hogy szeretne-e Hugging Face adatcsomagot létrehozni:
-    
-        Ha igen, bekéri az adatcsomag nevét és létrehozza az adatcsomagot a dataset_creation.py-ban található main függvény segítségével.
 
+## The main script performs the following steps:
+
+    Prompts the user to provide the GPU ID to be used.
+
+    Prompts the user to specify the input folder path and the output folder path.
+
+    Checks if the input folder exists.
+
+    Creates the output folder if it does not exist.
+
+    Processes the text files in the input folder using the process_all_files function from text_cleaner.py.
+
+    Identifies and lists duplicate sentences in the processed files using the main function from deduplicate.py.
+
+    Asks the user whether they want to delete the duplicate sentences.
+
+    Asks the user whether they want to create a Hugging Face dataset:
+        If yes, prompts for the dataset name and creates the dataset using the main function from dataset_creation.py.
