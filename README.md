@@ -1,6 +1,6 @@
 # BERTextFilter
 
-This project provides a Hungarian text processing pipeline that includes filtering based on the grammatical correctness of text files, handling duplicate sentences, and optionally creating a Hugging Face dataset.
+This project provides a Hungarian text processing pipeline that includes filtering based on the grammatical correctness of text files, handling duplicate sentences, and optionally creating a Hugging Face dataset. It segments the text based on semantic similarity.
 It uses two language models to accompish the task: 
 -NYTK/hucola-puli-bert-large-hungarian 
 -NYTK/sentence-transformers-experimental-hubert-hungarian
